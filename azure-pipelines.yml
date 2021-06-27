@@ -1,0 +1,42 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- none
+
+stages:
+  - stage:
+    displayName: "main - Single stage pipeline"
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+      - job: 
+        steps:
+          - task: UseDotNet@2
+            packageType: 'sdk'
+            version: 5.0.x
+
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'restore'
+              projects: '**/*.csproj'
+          
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'build'
+              projects: '**/*.csproj'
+              arguments: '--no-restore --configuration release'
+            
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'publish'
+              publishWebProjects: true
+              arguments: '--no-build --configuration release --output $(Build.ArtifactStagingDirectory)'
+            
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
